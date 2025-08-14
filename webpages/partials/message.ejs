@@ -1,0 +1,11 @@
+<% if (alerting === 'success') { %>
+    <div class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>Success!</strong> <%= message ;%>
+    </div>
+<% } else if (alerting === 'error') { %>
+    <div class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <strong>Error!</strong> <%= message ;%>
+    </div>
+<% } %>

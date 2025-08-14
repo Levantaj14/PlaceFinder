@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container-fluid">
+        <% if (pageName === 'index') { %>
+            <a class="navbar-brand" href="#">PlaceFinder</a>
+        <% } else { %>
+            <a class="navbar-brand" href="/">PlaceFinder</a>
+        <% } %>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav ms-auto">
+                <% if (!login) { %>
+                    <% if (pageName === 'login' || pageName === 'signup') { %>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#"><i class="bi bi-person-fill"></i> Login</a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login"><i class="bi bi-person-fill"></i> Login</a>
+                        </li>
+                    <% } %>
+                <% } else { %>
+                    <% if (pageName === 'postListing') { %>
+                        <li class="nav-item">
+                            <a class="nav-link active" href='#'>Post a listing</a>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/postListing">Post a listing</a>
+                        </li>
+                    <% } %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="bi bi-person-fill"></i> <%= username; %>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <% if (pageName === 'dashboard') { %>
+                                <li><a class="dropdown-item active" href="/dashboard">Your Dashboard</a></li>
+                            <% } else { %>
+                                <li><a class="dropdown-item" href="/dashboard">Your Dashboard</a></li>
+                            <% } %>
+                            <li><a class="dropdown-item text-danger" href="/account/logout">Log out</a></li>
+                        </ul>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>

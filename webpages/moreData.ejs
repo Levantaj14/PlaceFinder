@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title><%= listing.title; %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <% if (hasAccess || isAdmin === 'true') { %>
+        <script src="/listingDataScript.js"></script>
+    <% } else if (loggedIn) { %>
+        <script src="/sendMessage.js"></script>
+    <% } %>
+</head>
+
+<body>
+<%- include('partials/navbar.ejs', { login: loggedIn, username, pageName: 'moreData' }) %>
+
+<div class="container mt-3 mb-4">
+    <%- include('partials/message.ejs', { alerting, message }) %>
+    <% if (hasAccess || isAdmin === 'true') { %>
+        <form id="editForm" action="#" method="post">
+            <div class="row mb-2">
+                <label>
+                    <input type="text" class="form-control form-control-lg" name="title" value="<%= listing.title %>"
+                           placeholder="Title">
+                </label>
+            </div>
+            <h5><%= listing.dateOfAvailability; %></h5>
+            <dl class="row">
+                <% if (listing.street !== '') { %>
+                    <dt class="col-sm-3">Street</dt>
+                    <dd class="col-sm-9"><%= listing.street; %>, <%= listing.number; %></dd>
+                <% } %>
+                <% if (listing.city === '-') { %>
+                    <dt class="col-sm-3">Country</dt>
+                    <dd class="col-sm-9"><%= listing.country; %></dd>
+                <% } else { %>
+                    <dt class="col-sm-3">City</dt>
+                    <dd class="col-sm-9"><%= listing.city; %>, <%= listing.country; %></dd>
+                <% } %>
+                <% if (listing.district !== '') { %>
+                    <dt class="col-sm-3">District</dt>
+                    <dd class="col-sm-9"><%= listing.district; %></dd>
+                <% } %>
+                <% if (listing.roomNumber !== '') { %>
+                    <dt class="col-sm-3">Number of rooms</dt>
+                    <dd class="col-sm-9"><%= listing.roomNumber; %></dd>
+                <% } %>
+                <% if (listing.area !== '') { %>
+                    <dt class="col-sm-3">Area</dt>
+                    <dd class="col-sm-9"><%= listing.area; %> m<sup>2</sup></dd>
+                <% } %>
+                <% if (listing.price !== '') { %>
+                    <dt class="col-sm-3">Price</dt>
+                    <dd class="col-sm-9">
+                        <div class="input-group">
+                            <input type="number" class="form-control form-control-sm" name="price"
+                                   value="<%= listing.price %>">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </dd>
+                <% } %>
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">
+                    <textarea class="form-control" name="description"><%= listing.description %></textarea>
+                </dd>
+            </dl>
+            <input name="listingID" value="<%= listing._id %>" hidden>
+            <button id="editButton" type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+        <% if (pictures.length > 0) { %>
+            <hr>
+            <h5>Edit pictures</h5>
+            <table class="table-borderless">
+                <tbody>
+                <% pictures.forEach((element) => { %>
+                    <tr id="<%= element._id; %>">
+                        <td><img class="img-fluid" src="/images/<%= element.fileName %>" alt="Listing picture"></td>
+                        <td>
+                            <button type="button" class="btn btn-danger deleteButton"
+                                    data-pictureID="<%= element._id; %>"
+                                    data-listingID="<%= listing._id; %>">Delete
+                            </button>
+                        </td>
+                    </tr>
+                <% }); %>
+                </tbody>
+            </table>
+        <% } %>
+        <hr>
+        <% if (hasAccess) { %>
+            <h5>Upload a picture to your listing</h5>
+        <% } else { %>
+            <h5>Upload a picture to this listing</h5>
+        <% } %>
+        <form action="/picture/uploadPicture" method="post" id="uploadForm" enctype="multipart/form-data">
+            <input type="hidden" id="postID" name="listingID" value="<%= listing._id %>">
+            <div class="mb-3 mt-3">
+                <input class="form-control" type="file" id="uploadedPicture" name="uploadedPicture" accept="image/*"
+                       required>
+                <div class="invalid-feedback">
+                    You must choose a picture first.
+                </div>
+            </div>
+            <button type="submit" id="uploadButton" class="btn btn-primary">Upload</button>
+        </form>
+        <% if (!hasAccess) { %>
+            <hr>
+            <h5>Leave a message for <%= listing.user %> under this listing</h5>
+            <form id="messageForm" action="/listings/sendMessage" method="post">
+                <input name="listingID" value="<%= listing._id %>" hidden>
+                <dl class="col">
+                    <label class="form-label" for="message">Message</label>
+                    <textarea class="form-control" id="message" name="message" required></textarea>
+                    <div class="invalid-feedback">
+                        You can't send an empty message.
+                    </div>
+                </dl>
+                <dl class="col">
+                    <label class="form-label" for="contact">Phone number</label>
+                    <input class="form-control" type="number" id="contact" name="contact">
+                </dl>
+                <button id="messageButton" class="btn btn-primary" type="submit">Send message</button>
+            </form>
+        <% } %>
+        <%- include('partials/toastNotification.ejs') %>
+    <% } else { %>
+        <h2><%= listing.title; %></h2>
+        <h5><%= listing.dateOfAvailability; %></h5>
+        <dl class="row">
+            <% if (listing.street !== '') { %>
+                <dt class="col-sm-3">Street</dt>
+                <dd class="col-sm-9"><%= listing.street; %>, <%= listing.number; %></dd>
+            <% } %>
+            <dt class="col-sm-3">City</dt>
+            <dd class="col-sm-9"><%= listing.city; %>, <%= listing.country; %></dd>
+            <% if (listing.district !== '') { %>
+                <dt class="col-sm-3">District</dt>
+                <dd class="col-sm-9"><%= listing.district; %></dd>
+            <% } %>
+            <% if (listing.roomNumber !== '') { %>
+                <dt class="col-sm-3">Number of rooms</dt>
+                <dd class="col-sm-9"><%= listing.roomNumber; %></dd>
+            <% } %>
+            <% if (listing.area !== '') { %>
+                <dt class="col-sm-3">Area</dt>
+                <dd class="col-sm-9"><%= listing.area; %> m<sup>2</sup></dd>
+            <% } %>
+            <% if (listing.price !== '') { %>
+                <dt class="col-sm-3">Price</dt>
+                <dd class="col-sm-9"><%= listing.price; %>€</dd>
+            <% } %>
+            <% if (listing.description !== '') { %>
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9"><%= listing.description %></dd>
+            <% } %>
+        </dl>
+        <hr>
+        <h5>Leave a message under this listing</h5>
+        <% if (loggedIn) { %>
+            <h6>Only the author of the listing will see it, and you won't be able to edit it after sending it.</h6>
+            <form id="messageForm" action="/listings/sendMessage" method="post">
+                <input name="listingID" value="<%= listing._id %>" hidden>
+                <dl class="col">
+                    <label class="form-label" for="message">Message</label>
+                    <textarea class="form-control" id="message" name="message" required></textarea>
+                    <div class="invalid-feedback">
+                        You can't send an empty message.
+                    </div>
+                </dl>
+                <dl class="col">
+                    <label class="form-label" for="contact">Phone number</label>
+                    <input class="form-control" type="number" id="contact" name="contact">
+                </dl>
+                <button id="messageButton" class="btn btn-primary" type="submit">Send message</button>
+            </form>
+        <% } else { %>
+            <a href="/login">Sign up</a> to leave a message not just for this listing, but for all listings.
+        <% } %>
+        <% if (pictures.length === 1) { %>
+            <hr>
+            <h5>Picture</h5>
+            <img class="img-fluid" src="/images/<%= pictures[0].fileName %>" alt="Listing image">
+        <% } else if (pictures.length > 1) { %>
+            <hr>
+            <h5>Pictures</h5>
+            <% const firstPicture = pictures[0]; %>
+            <% pictures = pictures.slice(1); %>
+            <div id="picture" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#picture" data-bs-slide-to="0" class="active"></button>
+                    <% pictures.forEach((element, index) => { %>
+                        <button type="button" data-bs-target="#picture" data-bs-slide-to="<%= index + 1 %>"></button>
+                    <% }); %>
+                </div>
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="/images/<%= firstPicture.fileName %>" alt="Listing picture" class="d-block w-100">
+                    </div>
+                    <% pictures.forEach((element) => { %>
+                        <div class="carousel-item">
+                            <img src="/images/<%= element.fileName %>" alt="Listing picture" class="d-block w-100">
+                        </div>
+                    <% }); %>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#picture" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#picture" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+            </div>
+        <% } %>
+    <% } %>
+</div>
+</body>
